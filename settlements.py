@@ -18,19 +18,19 @@ from twilio.rest import TwilioRestClient
 
 def sendSMStoMembers(unpaidsmsMembers, latestMonth):
     """ This function sends the SMS to the unpaid members """
-    
+
     accountSID = 'AC8cbd4a333c67c10d8ae9b7f4d91f0916'
     authToken = '2cb23c3f21ff403b8168dde427dd540b'
 
     twilioCli = TwilioRestClient(accountSID, authToken)
 
     myTwilioNumber = '+19183763736' # This is the Twilio number
-    
+
 
     for name, mobile in unpaidsmsMembers.items():
         body = "Dear %s,\n\nRecords show that you have not paid dues for %s. \
                 \n\nPlease make this payment as soon as possible. \
-                \n\nThank you! \n\nRegards, \n\nSharad Durgawad" % (latestMonth, name, latestMonth)
+                \n\nThank you! \n\nRegards, \n\nSharad Durgawad" % (name, latestMonth)
 
         print('Sending sms to %s...' % mobile)
 
@@ -40,7 +40,7 @@ def sendSMStoMembers(unpaidsmsMembers, latestMonth):
 
         # Send the sms to the mobiles
         message = twilioCli.messages.create(to=mobile, from_=myTwilioNumber, body=body)
-          
+
 
 
 
@@ -125,7 +125,7 @@ def main():
     for i in range(2, sheet.max_row + 1):
 
         # get the payment status from the last column
-        paymentStatus = sheet.cell(row = i, column = sheet.max_column).value
+        paymentStatus = sheet.cell(row = i, column = sheet.max_column - 1).value
 
         # If not paid then send the mail to the member
         if paymentStatus <> 'paid':
