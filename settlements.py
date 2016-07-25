@@ -1,17 +1,48 @@
 #-------------------------------------------------------------------------------
-# Name:        settlements.py
+# Name:         settlements.py
 # Purpose:      This program checks the payments not done by the members and send
 #               the mails to those members
 #
-# Author:      sdurgawad
+# Author:       sdurgawad
 #
-# Created:     23/07/2016
-# Copyright:   (c) sdurgawad 2016
-# Licence:     <your licence>
+# Created:      23/07/2016
+# Copyright:    (c) sdurgawad 2016
+# Licence:      <your licence>
 #-------------------------------------------------------------------------------
 
 import openpyxl, smtplib, sys
 from datetime import datetime
+
+# This module will be used for sending the SMS to the members
+from twilio.rest import TwilioRestClient
+
+def sendSMStoMembers(unpaidsmsMembers, latestMonth):
+    """ This function sends the SMS to the unpaid members """
+    
+    accountSID = 'AC8cbd4a333c67c10d8ae9b7f4d91f0916'
+    authToken = '2cb23c3f21ff403b8168dde427dd540b'
+
+    twilioCli = TwilioRestClient(accountSID, authToken)
+
+    myTwilioNumber = '+19183763736' # This is the Twilio number
+    
+
+    for name, mobile in unpaidsmsMembers.items():
+        body = "Dear %s,\n\nRecords show that you have not paid dues for %s. \
+                \n\nPlease make this payment as soon as possible. \
+                \n\nThank you! \n\nRegards, \n\nSharad Durgawad" % (latestMonth, name, latestMonth)
+
+        print('Sending sms to %s...' % mobile)
+
+        # Add +91 to the beginning of mobile number
+
+        mobile = '+91' + str(mobile)
+
+        # Send the sms to the mobiles
+        message = twilioCli.messages.create(to=mobile, from_=myTwilioNumber, body=body)
+          
+
+
 
 def sendMailtoMembers(unpaidMembers, latestMonth):
     """ This function sends the mail to the unpaid members """
@@ -89,6 +120,7 @@ def main():
 
     # Declare the dictionary for the list of unpaid members
     unpaidMembers = {}
+    unpaidsmsMembers = {}
 
     for i in range(2, sheet.max_row + 1):
 
@@ -100,10 +132,17 @@ def main():
             name = sheet.cell(row = i, column = 1).value
             email = sheet.cell(row = i, column = 2).value
             amountDue = sheet.cell(row = i, column = 4).value
+            mobile = sheet.cell(row = i, column = 3).value
             unpaidMembers[name] = email
+            unpaidsmsMembers[name] = mobile
 
-    # call the sendmail function to send the reminder mails to unpaid members
+    # call the sendMailtoMembers function to send the reminder mails to unpaid members
+    # month + ' ' + year is in the form of Jan 2016
     sendMailtoMembers(unpaidMembers, month + ' ' + year)
+
+    # call the sendSMStoMembers function to send the reminder sms to unpaid members
+    # month + ' ' + year is in the form of Jan 2016
+    sendSMStoMembers(unpaidsmsMembers, month + ' ' + year)
 
     sys.exit()
 
