@@ -39,7 +39,7 @@ def sendSMStoMembers(unpaidsmsMembers, latestMonth):
         mobile = '+91' + str(mobile)
 
         # Send the sms to the mobiles
-        message = twilioCli.messages.create(to=mobile, from_=myTwilioNumber, body= "\n\nHi \n\nI Love You Bibto \n\nYours, \n\nSharad")
+        message = twilioCli.messages.create(to=mobile, from_=myTwilioNumber, body=body)
 
 
 
