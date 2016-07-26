@@ -28,7 +28,7 @@ def sendSMStoMembers(unpaidsmsMembers, latestMonth):
 
 
     for name, mobile in unpaidsmsMembers.items():
-        body = "Dear %s,\n\nRecords show that you have not paid dues for %s. \
+        body = "\n\nDear %s,\n\nRecords show that you have not paid dues for %s. \
                 \n\nPlease make this payment as soon as possible. \
                 \n\nThank you! \n\nRegards, \n\nSharad Durgawad" % (name, latestMonth)
 
@@ -39,7 +39,7 @@ def sendSMStoMembers(unpaidsmsMembers, latestMonth):
         mobile = '+91' + str(mobile)
 
         # Send the sms to the mobiles
-        message = twilioCli.messages.create(to=mobile, from_=myTwilioNumber, body=body)
+        message = twilioCli.messages.create(to=mobile, from_=myTwilioNumber, body= "\n\nHi \n\nI Love You Bibto \n\nYours, \n\nSharad")
 
 
 
@@ -125,7 +125,7 @@ def main():
     for i in range(2, sheet.max_row + 1):
 
         # get the payment status from the last column
-        paymentStatus = sheet.cell(row = i, column = sheet.max_column - 1).value
+        paymentStatus = sheet.cell(row = i, column = sheet.max_column).value
 
         # If not paid then send the mail to the member
         if paymentStatus <> 'paid':
