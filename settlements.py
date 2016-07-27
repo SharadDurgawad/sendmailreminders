@@ -14,6 +14,7 @@ import openpyxl, smtplib, sys
 from datetime import datetime
 
 # This module will be used for sending the SMS to the members
+from twilio import TwilioRestException
 from twilio.rest import TwilioRestClient
 
 def sendSMStoMembers(unpaidsmsMembers, latestMonth):
@@ -38,10 +39,11 @@ def sendSMStoMembers(unpaidsmsMembers, latestMonth):
 
         mobile = '+91' + str(mobile)
 
-        # Send the sms to the mobiles
-        message = twilioCli.messages.create(to=mobile, from_=myTwilioNumber, body=body)
-
-
+        try:
+            # Send the sms to the mobiles
+            message = twilioCli.messages.create(to=mobile, from_=myTwilioNumber, body=body)
+        except TwilioRestException as e:
+            print(e)
 
 
 def sendMailtoMembers(unpaidMembers, latestMonth):
@@ -49,14 +51,21 @@ def sendMailtoMembers(unpaidMembers, latestMonth):
 
     mailFrom = 'durgawad@gmail.com'
 
-    smtpObj = smtplib.SMTP('smtp.gmail.com', 587)
+    try:
+        smtpObj = smtplib.SMTP('smtp.gmail.com', 587)
+    except smtplib.socket.gaierror:
+        return false    # Couldn't contact the host
 
     smtpObj.ehlo()
     smtpObj.starttls()
 
     password = raw_input("\n Enter the password")
 
-    smtpObj.login(mailFrom, password)
+    try:
+        smtpObj.login(mailFrom, password)
+    except SMTPAuthenticationError:
+        smtpObj.quit()
+        return false    # Login failed
 
     for name, email in unpaidMembers.items():
         body = "Subject: %s dues unpaid.\nDear %s,\n\nRecords show that you have not paid dues for %s. \
@@ -65,8 +74,12 @@ def sendMailtoMembers(unpaidMembers, latestMonth):
 
         print('Sending email to %s...' % email)
 
-        # Send the mail to email
-        sendmailStatus = smtpObj.sendmail(mailFrom, email, body)
+        try:
+            # Send the mail to email
+            sendmailStatus = smtpObj.sendmail(mailFrom, email, body)
+        except SomeSendMailError:
+            smtpObj.quit()
+            return false    # Couldn't send mail
 
         if sendmailStatus != {}:
            print('There was a problem sending email to %s: %s' % (email, sendmailStatus))
@@ -102,7 +115,10 @@ def convertDate(date):
 def main():
     """ This is the main method where the program begins """
 
-    wb = openpyxl.load_workbook('settlements.xlsx')
+    try:
+        wb = openpyxl.load_workbook('settlements.xlsx')
+    except InvalidFileException:
+        return false
 
     sheet = wb.get_sheet_by_name('Sheet1')
 
